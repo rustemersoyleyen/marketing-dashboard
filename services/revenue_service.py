@@ -48,7 +48,10 @@ def get_revenue(start_date: date, end_date: date, sources: list = None) -> pd.Da
         
     except Exception as e:
         print(f"❌ Ciro verisi çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "MemberId", "UtmSource", "UtmMedium", "UtmContent",
+            "StudentName", "Product", "TotalPrice", "NetPrice", "OrderDate"
+        ])
 
 
 def get_revenue_summary_by_source_content(start_date: date, end_date: date, sources: list = None) -> pd.DataFrame:
@@ -77,7 +80,10 @@ def get_revenue_summary_by_source_content(start_date: date, end_date: date, sour
         
     except Exception as e:
         print(f"❌ Ciro özeti çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "UtmSource", "UtmContent", "OrderCount", 
+            "TotalRevenue", "NetRevenue", "AvgOrderValue"
+        ])
 
 
 def get_revenue_daily_trend(start_date: date, end_date: date, sources: list = None) -> pd.DataFrame:
@@ -103,7 +109,7 @@ def get_revenue_daily_trend(start_date: date, end_date: date, sources: list = No
         
     except Exception as e:
         print(f"❌ Ciro trend verisi çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=["Date", "UtmSource", "TotalRevenue", "OrderCount"])
 
 
 def get_total_revenue(start_date: date, end_date: date, sources: list = None) -> float:

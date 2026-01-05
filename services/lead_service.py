@@ -48,7 +48,10 @@ def get_leads(start_date: date, end_date: date, sources: list = None) -> pd.Data
         
     except Exception as e:
         print(f"❌ Lead verisi çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "MemberId", "UtmSource", "UtmMedium", "UtmTerm", 
+            "UtmContent", "CreateDate"
+        ])
 
 
 def get_lead_count_by_source_content(start_date: date, end_date: date, sources: list = None) -> pd.DataFrame:
@@ -77,7 +80,10 @@ def get_lead_count_by_source_content(start_date: date, end_date: date, sources: 
         
     except Exception as e:
         print(f"❌ Lead sayısı çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=[
+            "UtmSource", "UtmContent", "LeadCount", 
+            "FirstLeadDate", "LastLeadDate"
+        ])
 
 
 def get_lead_daily_trend(start_date: date, end_date: date, sources: list = None) -> pd.DataFrame:
@@ -103,7 +109,7 @@ def get_lead_daily_trend(start_date: date, end_date: date, sources: list = None)
         
     except Exception as e:
         print(f"❌ Lead trend verisi çekme hatası: {e}")
-        return pd.DataFrame()
+        return pd.DataFrame(columns=["Date", "UtmSource", "LeadCount"])
 
 
 def get_total_leads(start_date: date, end_date: date, sources: list = None) -> int:
