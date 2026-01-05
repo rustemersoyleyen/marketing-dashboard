@@ -1,0 +1,38 @@
+# Git ignore dosyası
+# Hassas bilgileri GitHub'a yüklememek için
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Google Ads credentials
+config/google-ads.yaml
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local config (eğer varsa)
+.env
+*.local

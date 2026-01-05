@@ -1,0 +1,7 @@
+streamlit>=1.28.0
+pandas>=2.0.0
+plotly>=5.15.0
+pyodbc>=4.0.39
+google-ads>=21.0.0
+facebook-business>=17.0.0
+python-dateutil>=2.8.2
