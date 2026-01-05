@@ -2,30 +2,92 @@
 Database Connection Manager
 ===========================
 MSSQL Server bağlantı yönetimi
+Streamlit Cloud için pymssql, lokal için pyodbc destekler
 """
 
-import pyodbc
+import streamlit as st
 from contextlib import contextmanager
-from config.database import get_connection_string
 
 
 class DatabaseConnection:
     """MSSQL veritabanı bağlantı yöneticisi"""
     
     _connection = None
+    _driver = None  # 'pymssql' veya 'pyodbc'
+    
+    @classmethod
+    def _get_config(cls):
+        """Secrets'dan database config alır"""
+        if hasattr(st, 'secrets') and 'database' in st.secrets:
+            return {
+                'server': st.secrets["database"]["server"],
+                'database': st.secrets["database"]["database"],
+                'username': st.secrets["database"]["username"],
+                'password': st.secrets["database"]["password"],
+                'driver': st.secrets["database"].get("driver", "ODBC Driver 17 for SQL Server")
+            }
+        # Fallback
+        return {
+            'server': 'deep.konusarakogren.com',
+            'database': 'MemberPrime',
+            'username': 'sa',
+            'password': '',
+            'driver': 'ODBC Driver 17 for SQL Server'
+        }
     
     @classmethod
     def get_connection(cls):
         """Veritabanı bağlantısı döner (singleton pattern)"""
-        if cls._connection is None or cls._connection.closed:
+        if cls._connection is not None:
             try:
-                connection_string = get_connection_string()
-                cls._connection = pyodbc.connect(connection_string)
-                print("✅ Veritabanı bağlantısı başarılı")
-            except pyodbc.Error as e:
-                print(f"❌ Veritabanı bağlantı hatası: {e}")
-                raise
-        return cls._connection
+                # Bağlantının hala açık olup olmadığını kontrol et
+                if cls._driver == 'pymssql':
+                    cursor = cls._connection.cursor()
+                    cursor.execute("SELECT 1")
+                    cursor.close()
+                else:
+                    if not cls._connection.closed:
+                        return cls._connection
+                return cls._connection
+            except:
+                cls._connection = None
+        
+        config = cls._get_config()
+        
+        # Önce pymssql dene (Streamlit Cloud için ideal)
+        try:
+            import pymssql
+            cls._connection = pymssql.connect(
+                server=config['server'],
+                user=config['username'],
+                password=config['password'],
+                database=config['database'],
+                charset='utf8'
+            )
+            cls._driver = 'pymssql'
+            print("✅ Veritabanı bağlantısı başarılı (pymssql)")
+            return cls._connection
+        except Exception as e1:
+            print(f"⚠️ pymssql bağlantısı başarısız: {e1}")
+        
+        # pymssql başarısız olursa pyodbc dene
+        try:
+            import pyodbc
+            connection_string = (
+                f"DRIVER={{{config['driver']}}};"
+                f"SERVER={config['server']};"
+                f"DATABASE={config['database']};"
+                f"UID={config['username']};"
+                f"PWD={config['password']};"
+                f"TrustServerCertificate=yes;"
+            )
+            cls._connection = pyodbc.connect(connection_string)
+            cls._driver = 'pyodbc'
+            print("✅ Veritabanı bağlantısı başarılı (pyodbc)")
+            return cls._connection
+        except Exception as e2:
+            print(f"❌ pyodbc bağlantısı da başarısız: {e2}")
+            raise Exception(f"Veritabanı bağlantısı kurulamadı. pymssql hatası: {e1}, pyodbc hatası: {e2}")
     
     @classmethod
     def close(cls):
@@ -33,6 +95,7 @@ class DatabaseConnection:
         if cls._connection is not None:
             cls._connection.close()
             cls._connection = None
+            cls._driver = None
             print("Veritabanı bağlantısı kapatıldı")
 
 
